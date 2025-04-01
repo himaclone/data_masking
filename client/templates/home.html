@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Web</title>
+    <style>
+        /* Định vị nút logout ở góc trên bên phải */
+        .logout {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+        }
+
+        .logout a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .logout a:hover {
+            color: #0056b3;
+        }
+
+        .upload-container {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="logout">
+        <a href="http://localhost:8000/client/login">Logout</a>
+    </div>
+
+    <!-- Hiển thị danh sách nhân viên -->
+    {% if employees %}
+    <h2>Danh sách Nhân viên:</h2>
+    <ul>
+        {% for employee in employees %}
+        <li><a href="/client/employees/{{ employee.code }}/">{{ employee.code }}</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Không có dữ liệu nhân viên.</p>
+    {% endif %}
+
+    <h1>Danh sách Tệp đã tải lên</h1>
+    {% if file_uploads %}
+    <ul>
+        {% for file in file_uploads %}
+        <li><a href="/client/files/{{ file.id }}/" target="_blank">Tên tệp: {{ file.name }} - Kích thước: {{ file.size
+                }} bytes</a></li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Không có tệp nào đã tải lên.</p>
+    {% endif %}
+
+</body>
+
+</html>

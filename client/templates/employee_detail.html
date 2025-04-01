@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết Nhân viên</title>
+    <style>
+        /* Một số kiểu CSS cơ bản */
+        .employee-details {
+            margin: 20px;
+        }
+
+        .employee-details h1 {
+            text-align: center;
+        }
+
+        .employee-details table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .employee-details th,
+        .employee-details td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .employee-details th {
+            background-color: #f2f2f2;
+        }
+
+        .employee-details td {
+            background-color: #fafafa;
+        }
+
+        .back-btn {
+            margin-top: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .back-btn a {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .back-btn a:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="employee-details">
+        <h1>Chi tiết Nhân viên</h1>
+        {% if employee %}
+        <h2>Danh sách Nhân viên:</h2>
+        <ul>
+            <!-- Bảng hiển thị chi tiết nhân viên -->
+            <table>
+                <tr>
+                    <th>Mã nhân viên</th>
+                    <td>{{ employee.code }}</td>
+                </tr>
+                <tr>
+                    <th>Tên nhân viên</th>
+                    <td>{{ employee.name }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td>{{ employee.email }}</td>
+                </tr>
+                <tr>
+                    <th>Giới tính</th>
+                    <td>{{ employee.gender }}</td>
+                </tr>
+                <tr>
+                    <th>Ngày sinh</th>
+                    <td>{{ employee.date_of_birth }}</td>
+                </tr>
+                <tr>
+                    <th>Số điện thoại</th>
+                    <td>{{ employee.personal_information.phone_number }}</td>
+                </tr>
+                <tr>
+                    <th>Ngày xóa</th>
+                    <td>{{ employee.deleted_at|date:"d/m/Y" }}</td>
+                </tr>
+            </table>
+        </ul>
+        {% else %}
+        <p>Không có dữ liệu nhân viên.</p>
+        {% endif %}
+        {{employee}}
+
+        <!-- Nút quay lại -->
+        <div class="back-btn">
+            <li><a href="/client/home/">Quay lại danh sách nhân viên</a></li>
+        </div>
+    </div>
+</body>
+
+</html>

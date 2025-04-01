@@ -1,0 +1,33 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+mysql_ready() {
+    python <<END
+import sys
+import os
+import mysql.connector
+
+try:
+    mysql.connector.connect(
+        host="db",
+        user=os.getenv("MYSQL_USER"),
+        password=os.getenv("MYSQL_PASSWORD"),
+        database=os.getenv("MYSQL_DATABASE"),
+        port=3306,
+    )
+except mysql.connector.Error:
+    sys.exit(-1)
+sys.exit(0)
+END
+}
+
+until mysql_ready; do
+    echo >&2 'Waiting for MySQL to become available...'
+    sleep 1
+done
+echo >&2 'MySQL is available'
+
+exec "$@"
