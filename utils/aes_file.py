@@ -113,19 +113,44 @@ def add_round_key(state, round_key):
     return [state[i] ^ round_key[i] for i in range(16)]
 
 def key_expansion(key):
-    expanded_key = list(key)
-    for i in range(4, 44):
-        temp = expanded_key[(i-1)*4:(i-1)*4+4]
-        if i % 4 == 0:
-            temp = [SBOX[temp[1]] ^ RCON[i//4-1], SBOX[temp[2]], SBOX[temp[3]], SBOX[temp[0]]]
-        expanded_key.extend([expanded_key[(i-4)*4+j] ^ temp[j] for j in range(4)])
-    return expanded_key
-
-def aes_encrypt_block(plaintext, expanded_key):
-    state = list(plaintext)
-    state = add_round_key(state, expanded_key[0:16])
+    key_len = len(key)
+    if key_len not in (16, 24, 32):
+        raise ValueError("Key must be 16, 24, or 32 bytes")
     
-    for round in range(1, 10):
+    Nk = key_len // 4  # Số từ trong khóa (4, 6, 8)
+    Nr = {16: 10, 24: 12, 32: 14}[key_len]  # Số vòng
+    Nw = 4 * (Nr + 1)  # Tổng số từ trong khóa mở rộng
+    
+    key_words = [int.from_bytes(key[i:i+4], 'big') for i in range(0, key_len, 4)]
+    expanded_key = key_words[:]
+    
+    for i in range(Nk, Nw):
+        temp = expanded_key[i-1]
+        if i % Nk == 0:
+            temp = (temp << 8) | (temp >> 24) & 0xFFFFFFFF
+            temp = (SBOX[(temp >> 24) & 0xFF] << 24) | (SBOX[(temp >> 16) & 0xFF] << 16) | \
+                   (SBOX[(temp >> 8) & 0xFF] << 8) | SBOX[temp & 0xFF]
+            temp ^= (RCON[i//Nk - 1] << 24)
+        elif Nk > 6 and i % Nk == 4:  # Chỉ áp dụng cho AES-256
+            temp = (SBOX[(temp >> 24) & 0xFF] << 24) | (SBOX[(temp >> 16) & 0xFF] << 16) | \
+                   (SBOX[(temp >> 8) & 0xFF] << 8) | SBOX[temp & 0xFF]
+        expanded_key.append(expanded_key[i-Nk] ^ temp)
+    
+    return [byte for word in expanded_key for byte in word.to_bytes(4, 'big')]
+
+def aes_encrypt_block(plaintext, key):
+    if len(plaintext) != 16:
+        raise ValueError("Block must be 16 bytes")
+    key_len = len(key)
+    if key_len not in (16, 24, 32):
+        raise ValueError("Key must be 16, 24, or 32 bytes")
+    
+    Nr = {16: 10, 24: 12, 32: 14}[key_len]
+    expanded_key = key_expansion(key)
+    state = list(plaintext)
+    
+    state = add_round_key(state, expanded_key[0:16])
+    for round in range(1, Nr):
         state = sub_bytes(state)
         state = shift_rows(state)
         state = mix_columns(state)
@@ -133,17 +158,26 @@ def aes_encrypt_block(plaintext, expanded_key):
     
     state = sub_bytes(state)
     state = shift_rows(state)
-    state = add_round_key(state, expanded_key[10*16:11*16])
+    state = add_round_key(state, expanded_key[Nr*16:(Nr+1)*16])
     
     return bytes(state)
 
-def aes_decrypt_block(ciphertext, expanded_key):
+def aes_decrypt_block(ciphertext, key):
+    if len(ciphertext) != 16:
+        raise ValueError("Block must be 16 bytes")
+    key_len = len(key)
+    if key_len not in (16, 24, 32):
+        raise ValueError("Key must be 16, 24, or 32 bytes")
+    
+    Nr = {16: 10, 24: 12, 32: 14}[key_len]
+    expanded_key = key_expansion(key)
     state = list(ciphertext)
-    state = add_round_key(state, expanded_key[10*16:11*16])
+    
+    state = add_round_key(state, expanded_key[Nr*16:(Nr+1)*16])
     state = inv_shift_rows(state)
     state = inv_sub_bytes(state)
     
-    for round in range(9, 0, -1):
+    for round in range(Nr-1, 0, -1):
         state = add_round_key(state, expanded_key[round*16:(round+1)*16])
         state = inv_mix_columns(state)
         state = inv_shift_rows(state)
@@ -153,11 +187,8 @@ def aes_decrypt_block(ciphertext, expanded_key):
     return bytes(state)
 
 def encrypt_file(input_file, output_file, key):
-    if len(key) != 16:
-        raise ValueError("Key must be 16 bytes for AES-128")
-    
-    # Mở rộng khóa
-    expanded_key = key_expansion(key)
+    if len(key) not in (16, 24, 32):
+        raise ValueError("Key must be 16, 24, or 32 bytes")
     
     # Đọc dữ liệu từ tệp đầu vào
     with open(input_file, 'rb') as f:
@@ -171,7 +202,7 @@ def encrypt_file(input_file, output_file, key):
     ciphertext = b''
     for i in range(0, len(plaintext), 16):
         block = plaintext[i:i+16]
-        ciphertext += aes_encrypt_block(block, expanded_key)
+        ciphertext += aes_encrypt_block(block, key)
     
     # Ghi dữ liệu mã hóa vào tệp đầu ra
     with open(output_file, 'wb') as f:
@@ -179,12 +210,9 @@ def encrypt_file(input_file, output_file, key):
     
     print(f"File encrypted successfully: {output_file}")
 
-def decrypt_file(input_file, output_file, key):
-    if len(key) != 16:
-        raise ValueError("Key must be 16 bytes for AES-128")
-    
-    # Mở rộng khóa
-    expanded_key = key_expansion(key)
+def decrypt_file(input_file, output_file,key):
+    if len(key) not in (16, 24, 32):
+        raise ValueError("Key must be 16, 24, or 32 bytes")
     
     # Đọc dữ liệu từ tệp mã hóa
     with open(input_file, 'rb') as f:
@@ -194,7 +222,7 @@ def decrypt_file(input_file, output_file, key):
     plaintext = b''
     for i in range(0, len(ciphertext), 16):
         block = ciphertext[i:i+16]
-        plaintext += aes_decrypt_block(block, expanded_key)
+        plaintext += aes_decrypt_block(block, key)
     
     # Loại bỏ padding
     padding_length = plaintext[-1]
@@ -205,27 +233,3 @@ def decrypt_file(input_file, output_file, key):
         f.write(plaintext)
     
     print(f"File decrypted successfully: {output_file}")
-
-# Test chương trình
-# if __name__ == "__main__":
-#     # Khóa AES-128 (16 bytes)
-#     key = b"1234567890abcdef"
-    
-#     # Tệp thử nghiệm
-#     input_file = "test.txt"
-#     encrypted_file = "test_encrypted.bin"
-#     decrypted_file = "test_decrypted.txt"
-    
-#     # Tạo tệp thử nghiệm
-#     with open(input_file, 'a') as f:
-#         f.write("This is a secret message!")
-    
-#     # Mã hóa tệp
-#     encrypt_file(input_file, encrypted_file, key)
-    
-#     # Giải mã tệp
-#     decrypt_file(encrypted_file, decrypted_file, key)
-    
-#     # Kiểm tra kết quả
-#     with open(decrypted_file, 'r') as f:
-#         print(f"Decrypted content: {f.read()}")
