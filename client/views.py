@@ -49,7 +49,6 @@ def login_view(request):
                 tokens = get_tokens_for_user(user)
                 request.session['access_token'] = tokens['access']  # Lưu access token vào session
                 request.session['refresh_token'] = tokens['refresh']  # Lưu refresh token (tùy chọn)
-                
                 messages.success(request, "Đăng nhập thành công!")
                 return redirect('home')
             else:
@@ -88,7 +87,10 @@ def home_view(request):
     response = requests.get(f"{API_BASE_URL}employees/", headers=headers)
     employees = response.json() if response.status_code == 200 else []
 
-    return render(request, "home.html", {"employees": employees})
+    response = requests.get(f"{API_BASE_URL}files/", headers=headers)
+    files = response.json() if response.status_code == 200 else []
+
+    return render(request, "home.html", {"employees": employees, "files": files})
 
 
 # @login_required

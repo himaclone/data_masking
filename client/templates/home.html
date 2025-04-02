@@ -6,26 +6,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client Web</title>
     <style>
-        /* Định vị nút logout ở góc trên bên phải */
-        .logout {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-        }
+        body {
+        display: flex;
+        flex-direction: row;
+        min-height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
 
-        .logout a {
-            text-decoration: none;
-            font-weight: bold;
-            color: #007bff;
-        }
+    .logout {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+    }
 
-        .logout a:hover {
-            color: #0056b3;
-        }
+    .logout a {
+        text-decoration: none;
+        font-weight: bold;
+        color: #007bff;
+    }
 
-        .upload-container {
-            text-align: center;
-        }
+    .logout a:hover {
+        color: #0056b3;
+    }
+
+    .left-panel {
+        width: 50%; /* Hai bên bằng nhau */
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-right: 1px solid #ddd;
+        overflow-y: auto; /* Cuộn nếu danh sách nhân viên dài */
+    }
+
+    .right-panel {
+        width: 50%; /* Hai bên bằng nhau */
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .files-list {
+        /* flex: 1; Chiếm không gian còn lại, đẩy upload xuống dưới */
+        overflow-y: auto; /* Cuộn nếu danh sách tệp dài */
+    }
+
+    .upload-container {
+        text-align: center;
+        margin-top: 20px; /* Khoảng cách giữa danh sách tệp và upload */
+    }
+
+    .error-message {
+        color: red;
+        display: none;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        margin: 5px 0;
+    }
+
+    a {
+        text-decoration: none;
+        color: #007bff;
+    }
+
+    a:hover {
+        color: #0056b3;
+    }
     </style>
 </head>
 
@@ -34,30 +90,154 @@
         <a href="http://localhost:8000/client/login">Logout</a>
     </div>
 
-    <!-- Hiển thị danh sách nhân viên -->
-    {% if employees %}
-    <h2>Danh sách Nhân viên:</h2>
-    <ul>
-        {% for employee in employees %}
-        <li><a href="/client/employees/{{ employee.code }}/">{{ employee.code }}</a></li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Không có dữ liệu nhân viên.</p>
-    {% endif %}
+    <div class="left-panel">
+        {% if employees %}
+        <h1>Employees list:</h1>
+        <ul>
+            {% for employee in employees %}
+            <li><a href="/client/employees/{{ employee.code }}/">{{ employee.name }} - {{ employee.code }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>Không có dữ liệu nhân viên.</p>
+        {% endif %}
+    </div>
 
-    <h1>Danh sách Tệp đã tải lên</h1>
-    {% if file_uploads %}
-    <ul>
-        {% for file in file_uploads %}
-        <li><a href="/client/files/{{ file.id }}/" target="_blank">Tên tệp: {{ file.name }} - Kích thước: {{ file.size
-                }} bytes</a></li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>Không có tệp nào đã tải lên.</p>
-    {% endif %}
+    <div class="right-panel">
+        <div class="files-list">
+            <h1>Files list</h1>
+            {% if files %}
+            <ul>
+                {% for file in files %}
+                <li>
+                    <a href="#" onclick="downloadFile('{{file.id}}', '{{ file.name }}', '{{ file.is_encrypted|lower }}')">
+                        File name: {{ file.name }} - Is encrypted: {{ file.is_encrypted }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>Không có tệp nào đã tải lên.</p>
+            {% endif %}
+        </div>
 
+        <div class="upload-container">
+            <label for="key-length">Length of key:</label>
+            <select id="key-length" name="key-length">
+                <option value="16">16</option>
+                <option value="24">24</option>
+                <option value="32">32</option>
+            </select>
+            <br>
+            <label for="key">Enter key:</label>
+            <input type="text" id="key" name="key" placeholder="Nhập key..."><br>
+            <input type="file" id="file-input" name="file">
+            <label><input type="checkbox" id="encrypt-checkbox"> Encrypt</label>
+            <button onclick="uploadFile()">Upload</button>
+            <p id="error-message" class="error-message">Upload failed</p>
+        </div>
+    </div>
+
+    <script>
+        function uploadFile() {
+            const fileInput = document.getElementById('file-input');
+            const keyLength = document.getElementById('key-length').value;
+            const key = document.getElementById('key').value;
+            const encryptCheckbox = document.getElementById('encrypt-checkbox');
+            const errorMessage = document.getElementById('error-message');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                errorMessage.textContent = "Select a file to upload.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('key_length', keyLength);
+            formData.append('key', key);
+            formData.append('is_encrypted', encryptCheckbox.checked);
+
+            const token = "{{ request.session.access_token }}";
+
+            fetch('http://localhost:8000/api/v1/files/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Upload failed: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Upload successful:', data);
+                errorMessage.style.display = "none";
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = "Upload failed: " + error.message;
+                errorMessage.style.display = "block";
+            });
+        }
+
+        function downloadFile(file_id, fileName, isEncrypted) {
+            const key = document.getElementById('key').value;
+            const token = "{{ request.session.access_token }}";
+            const errorMessage = document.getElementById('error-message');
+            
+            isEncrypted = isEncrypted == 'true'
+
+            // Tạo URL cho request tải file
+            const url = `http://localhost:8000/api/v1/files/download/${file_id}/`;
+
+            // Tạo FormData để gửi key nếu file được mã hóa
+            const formData = new FormData();
+            if (isEncrypted) {
+                if (!key) {
+                    errorMessage.textContent = "Enter key to decrypt file.";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+                formData.append('key', key);
+            }
+
+            fetch(url, {
+                method: 'POST',  // Dùng POST để gửi key nếu cần giải mã
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: isEncrypted ? formData : null
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Download failed: ' + response.statusText);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Tạo link tải và kích hoạt download
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = fileName.replace('.enc', ''); // Loại bỏ đuôi .enc nếu có
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(downloadUrl);
+                errorMessage.style.display = "none";
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = "Download failed: " + error.message;
+                errorMessage.style.display = "block";
+            });
+        }
+    </script>
 </body>
 
 </html>

@@ -3,10 +3,10 @@ from api.models import Employee, WorkInformation, PersonalInformation
 
 def reset_data():
     # Xóa các bản ghi từ bảng PersonalInformation
-    PersonalInformation.objects.all().delete()
+    # PersonalInformation.objects.all().delete()
 
     # Xóa các bản ghi từ bảng WorkInformation
-    WorkInformation.objects.all().delete()
+    # WorkInformation.objects.all().delete()
 
     # Xóa các bản ghi từ bảng Employee
     Employee.objects.all().delete()

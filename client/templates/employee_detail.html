@@ -57,46 +57,65 @@
 
 <body>
     <div class="employee-details">
-        <h1>Chi tiết Nhân viên</h1>
+        <h1>Employee detail</h1>
         {% if employee %}
-        <h2>Danh sách Nhân viên:</h2>
         <ul>
             <!-- Bảng hiển thị chi tiết nhân viên -->
             <table>
                 <tr>
-                    <th>Mã nhân viên</th>
+                    <th>Code</th>
                     <td>{{ employee.code }}</td>
                 </tr>
                 <tr>
-                    <th>Tên nhân viên</th>
+                    <th>Full name</th>
                     <td>{{ employee.name }}</td>
                 </tr>
                 <tr>
-                    <th>Email</th>
-                    <td>{{ employee.email }}</td>
+                    <th>Personal 3mail</th>
+                    <td>{{ employee.personal_email }}</td>
                 </tr>
                 <tr>
-                    <th>Giới tính</th>
+                    <th>Gender</th>
                     <td>{{ employee.gender }}</td>
                 </tr>
                 <tr>
-                    <th>Ngày sinh</th>
+                    <th>Date of birth</th>
                     <td>{{ employee.date_of_birth }}</td>
                 </tr>
                 <tr>
-                    <th>Số điện thoại</th>
-                    <td>{{ employee.personal_information.phone_number }}</td>
+                    <th>Phone number</th>
+                    <td>{{ employee.phone_number }}</td>
                 </tr>
                 <tr>
-                    <th>Ngày xóa</th>
-                    <td>{{ employee.deleted_at|date:"d/m/Y" }}</td>
+                    <th>Social insurance code</th>
+                    <td>{{ employee.social_insurance_code}}</td>
+                </tr>
+                <tr>
+                    <th>Citizen identification code</th>
+                    <td>{{ employee.citizen_identification_code}}</td>
+                </tr>
+                <tr>
+                    <th>Birthplace</th>
+                    <td>{{ employee.birthplace}}</td>
+                </tr>
+                <tr>
+                    <th>Current address</th>
+                    <td>{{ employee.current_address}}</td>
+                </tr>
+                <tr>
+                    <th>Permanent address</th>
+                    <td>{{ employee.permanent_address}}</td>
+                </tr>
+                <tr>
+                    <th>Bank account number</th>
+                    <td>{{ employee.bank_account_number}}</td>
                 </tr>
             </table>
         </ul>
         {% else %}
         <p>Không có dữ liệu nhân viên.</p>
         {% endif %}
-        {{employee}}
+        <!-- {{employee}} -->
 
         <!-- Nút quay lại -->
         <div class="back-btn">

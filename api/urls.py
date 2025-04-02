@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt import views as jwt_views
 
-from .views import employee_detail, files, employee_list, health_check, me, overview
+from .views import employee_detail, files, file_download, employee_list, health_check, me, overview
 
 app_name = "api"
 
@@ -20,4 +20,6 @@ urlpatterns = [
     path("overview/", overview, name="overview"),
     # Files
     path("files/", files, name="files"),
+    path("files/download/<str:id>/", file_download, name="file_download"),
+
 ]
