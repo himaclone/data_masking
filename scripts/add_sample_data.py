@@ -2,7 +2,7 @@ from datetime import date
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from api.models import Employee
-# from utils import pbdkf2_sha256
+from utils import pbdkf2_sha256, aes_string
 
 def add_sample_data():
     # Thêm các bản ghi cho bảng auth_user
@@ -81,7 +81,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "0987654321",
             "education": "Học viện Kỹ thuật Mật Mã",
-            "graduation_year": 2020,
+            "graduation_year": "2020",
         },
         {
             "id": 3,
@@ -107,7 +107,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "1234567890",
             "education": "Trường Đại học Khoa học Tự nhiên",
-            "graduation_year": 2021,
+            "graduation_year": "2021",
         },
         {
             "id": 4,
@@ -133,7 +133,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "0123456789",
             "education": "Đại học Ngoại thương",
-            "graduation_year": 2022,
+            "graduation_year": "2022",
         },
         {
             "id": 5,
@@ -159,7 +159,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "6789012345",
             "education": "Học viện Bưu chính Viễn thông",
-            "graduation_year": 2023,
+            "graduation_year": "2023",
         },
         {
             "id": 6,
@@ -185,7 +185,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "7890123456",
             "education": "Trường Đại học Sư phạm Hà Nội",
-            "graduation_year": 2024,
+            "graduation_year": "2024",
         },
         {
             "id": 7,
@@ -211,7 +211,7 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "8901234567",
             "education": "Trường Đại học Ngoại thương",
-            "graduation_year": 2025,
+            "graduation_year": "2025",
         },
         {
             "id": 8,
@@ -237,10 +237,36 @@ def add_sample_data():
             "bank_name": "Vietcombank",
             "bank_account_number": "9012345678",
             "education": "Trường Đại học Kinh tế Quốc dân",
-            "graduation_year": 2026,
+            "graduation_year": "2026",
         },
     ]
+
+    key = b"1234123412341234"
+
     for employee_data in employees_data:
+        # employee_data["code"] = aes_string.aes_encrypt_string(employee_data["code"],key).hex()
+        employee_data["name"] = aes_string.aes_encrypt_string(employee_data["name"],key).hex()
+        employee_data["email"] = aes_string.aes_encrypt_string(employee_data["email"],key).hex()
+        employee_data["gender"] = aes_string.aes_encrypt_string(employee_data["gender"],key).hex()
+        employee_data["date_of_birth"] = aes_string.aes_encrypt_string(employee_data["date_of_birth"],key).hex()
+        employee_data["probationary_end_date"] = aes_string.aes_encrypt_string(employee_data["probationary_end_date"],key).hex()
+        employee_data["probationary_start_date"] = aes_string.aes_encrypt_string(employee_data["probationary_start_date"],key).hex()
+        employee_data["official_start_date"] = aes_string.aes_encrypt_string(employee_data["official_start_date"],key).hex()
+        employee_data["tax_code"] = aes_string.aes_encrypt_string(employee_data["tax_code"],key).hex()
+        employee_data["social_insurance_code"] = aes_string.aes_encrypt_string(employee_data["social_insurance_code"],key).hex()
+        employee_data["type"] = aes_string.aes_encrypt_string(employee_data["type"],key).hex()
+        employee_data["level"] = aes_string.aes_encrypt_string(employee_data["level"],key).hex()
+        employee_data["phone_number"] = aes_string.aes_encrypt_string(employee_data["phone_number"],key).hex()
+        employee_data["citizen_identification_code"] = aes_string.aes_encrypt_string(employee_data["citizen_identification_code"],key).hex()
+        employee_data["personal_email"] = aes_string.aes_encrypt_string(employee_data["personal_email"],key).hex()
+        employee_data["birthplace"] = aes_string.aes_encrypt_string(employee_data["birthplace"],key).hex()
+        employee_data["current_address"] = aes_string.aes_encrypt_string(employee_data["current_address"],key).hex()
+        employee_data["permanent_address"] = aes_string.aes_encrypt_string(employee_data["permanent_address"],key).hex()
+        employee_data["bank_name"] = aes_string.aes_encrypt_string(employee_data["bank_name"],key).hex()
+        employee_data["bank_account_number"] = aes_string.aes_encrypt_string(employee_data["bank_account_number"],key).hex()
+        employee_data["education"] = aes_string.aes_encrypt_string(employee_data["education"],key).hex()
+        employee_data["graduation_year"] = aes_string.aes_encrypt_string(employee_data["graduation_year"],key).hex()
+
         Employee.objects.create(**employee_data)
 
     # Thêm các bản ghi cho bảng work_informations

@@ -104,6 +104,7 @@ def pbkdf2_sha256(password, salt=None, iterations=720000, dklen=32):
         U = hmac_sha256(password, salt + i_bytes)
         T = U
         for j in range(iterations - 1):
+            print(f"in {i} and {j}")
             U = hmac_sha256(password, U)
             T = bytes(a ^ b for a, b in zip(T, U))
         derived_key += T

@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from api.models import Employee, WorkInformation, PersonalInformation
+from api.models import Employee
 
 def reset_data():
     # Xóa các bản ghi từ bảng PersonalInformation

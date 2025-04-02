@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết Nhân viên</title>
     <style>
-        /* Một số kiểu CSS cơ bản */
         .employee-details {
             margin: 20px;
         }
@@ -18,6 +17,7 @@
         .employee-details table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed; /* Cố định layout bảng */
         }
 
         .employee-details th,
@@ -25,14 +25,19 @@
             padding: 8px;
             border: 1px solid #ddd;
             text-align: left;
+            overflow: hidden; /* Ẩn nội dung tràn ra ngoài */
+            text-overflow: ellipsis; /* Thêm dấu ... nếu nội dung quá dài */
+            white-space: nowrap; /* Ngăn xuống dòng */
         }
 
         .employee-details th {
             background-color: #f2f2f2;
+            width: 30%; /* Cố định chiều rộng cột tiêu đề */
         }
 
         .employee-details td {
             background-color: #fafafa;
+            width: 70%; /* Cố định chiều rộng cột dữ liệu */
         }
 
         .back-btn {
@@ -52,6 +57,41 @@
         .back-btn a:hover {
             background-color: #0056b3;
         }
+
+        .key-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .key-container label {
+            margin-right: 10px;
+        }
+
+        .key-container select,
+        .key-container input[type="text"] {
+            padding: 5px;
+            margin-right: 10px;
+        }
+
+        .key-container button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .key-container button:hover {
+            background-color: #218838;
+        }
+
+        .error-message {
+            color: red;
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
     </style>
 </head>
 
@@ -60,7 +100,6 @@
         <h1>Employee detail</h1>
         {% if employee %}
         <ul>
-            <!-- Bảng hiển thị chi tiết nhân viên -->
             <table>
                 <tr>
                     <th>Code</th>
@@ -71,7 +110,7 @@
                     <td>{{ employee.name }}</td>
                 </tr>
                 <tr>
-                    <th>Personal 3mail</th>
+                    <th>Personal email</th>
                     <td>{{ employee.personal_email }}</td>
                 </tr>
                 <tr>
@@ -88,40 +127,120 @@
                 </tr>
                 <tr>
                     <th>Social insurance code</th>
-                    <td>{{ employee.social_insurance_code}}</td>
+                    <td>{{ employee.social_insurance_code }}</td>
                 </tr>
                 <tr>
                     <th>Citizen identification code</th>
-                    <td>{{ employee.citizen_identification_code}}</td>
+                    <td>{{ employee.citizen_identification_code }}</td>
                 </tr>
                 <tr>
                     <th>Birthplace</th>
-                    <td>{{ employee.birthplace}}</td>
+                    <td>{{ employee.birthplace }}</td>
                 </tr>
                 <tr>
                     <th>Current address</th>
-                    <td>{{ employee.current_address}}</td>
+                    <td>{{ employee.current_address }}</td>
                 </tr>
                 <tr>
                     <th>Permanent address</th>
-                    <td>{{ employee.permanent_address}}</td>
+                    <td>{{ employee.permanent_address }}</td>
                 </tr>
                 <tr>
                     <th>Bank account number</th>
-                    <td>{{ employee.bank_account_number}}</td>
+                    <td>{{ employee.bank_account_number }}</td>
                 </tr>
             </table>
         </ul>
         {% else %}
         <p>Không có dữ liệu nhân viên.</p>
         {% endif %}
-        <!-- {{employee}} -->
+
+        <!-- Phần chọn độ dài key, nhập key và nút nhấn -->
+        <div class="key-container">
+            <label for="key-length">Length of key:</label>
+            <select id="key-length" name="key-length">
+                <option value="16">16</option>
+                <option value="24">24</option>
+                <option value="32">32</option>
+            </select>
+            <label for="key">Enter key:</label>
+            <input type="text" id="key" name="key" placeholder="Nhập key...">
+            <button onclick="fetchEmployeeData()">Decrypt and Fetch</button>
+        </div>
+        <p id="error-message" class="error-message">Có lỗi xảy ra khi fetch dữ liệu.</p>
 
         <!-- Nút quay lại -->
         <div class="back-btn">
             <li><a href="/client/home/">Quay lại danh sách nhân viên</a></li>
         </div>
     </div>
+
+    <script>
+        function fetchEmployeeData() {
+            const keyLength = document.getElementById('key-length').value;
+            const key = document.getElementById('key').value;
+            const errorMessage = document.getElementById('error-message');
+            const employeeCode = "{{ employee.code }}";  // Lấy mã nhân viên từ template
+            const token = "{{ request.session.access_token }}";  // Token từ session
+
+            if (!key) {
+                errorMessage.textContent = "Vui lòng nhập key.";
+                errorMessage.style.display = "block";
+                return;
+            }
+
+            // Tạo FormData để gửi key
+            const formData = new FormData();
+            formData.append('key', key);
+            formData.append('key_length', keyLength);
+
+            // Gửi POST request đến API
+            fetch(`/api/v1/employees/${employeeCode}/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Fetch failed: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // console.log('Fetch successful:', data);
+                // errorMessage.style.display = "none";
+                // // Cập nhật dữ liệu trên trang
+                updateEmployeeDetails(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorMessage.textContent = "Có lỗi xảy ra khi fetch dữ liệu: " + error.message;
+                errorMessage.style.display = "block";
+            });
+        }
+
+        function updateEmployeeDetails(data) {
+            const tableRows = document.querySelectorAll('.employee-details table tr');
+            if (tableRows.length >= 12) {
+                tableRows[0].querySelector('td').textContent = data.code || '';
+                tableRows[1].querySelector('td').textContent = data.name || '';
+                tableRows[2].querySelector('td').textContent = data.personal_email || '';
+                tableRows[3].querySelector('td').textContent = data.gender || '';
+                tableRows[4].querySelector('td').textContent = data.date_of_birth || '';
+                tableRows[5].querySelector('td').textContent = data.phone_number || '';
+                tableRows[6].querySelector('td').textContent = data.social_insurance_code || '';
+                tableRows[7].querySelector('td').textContent = data.citizen_identification_code || '';
+                tableRows[8].querySelector('td').textContent = data.birthplace || '';
+                tableRows[9].querySelector('td').textContent = data.current_address || '';
+                tableRows[10].querySelector('td').textContent = data.permanent_address || '';
+                tableRows[11].querySelector('td').textContent = data.bank_account_number || '';
+            } else {
+                console.error('Không đủ hàng trong bảng để cập nhật dữ liệu.');
+            }
+        }
+    </script>
 </body>
 
 </html>

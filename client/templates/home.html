@@ -23,10 +23,26 @@
     .logout a {
         text-decoration: none;
         font-weight: bold;
-        color: #007bff;
+        color: #ff0000;
     }
 
     .logout a:hover {
+        color: #c40000;
+    }
+
+    .info {
+        position: fixed;
+        top: 20px;
+        right: 80px;
+    }
+
+    .info a {
+        text-decoration: none;
+        font-weight: bold;
+        color: #007bff;
+    }
+
+    .info a:hover {
         color: #0056b3;
     }
 
@@ -86,7 +102,12 @@
 </head>
 
 <body>
+    <div class="info">
+        <a href="http://localhost:8000/client/employees/{{ user.employee.code }}">user: {{ user }} - employee_id: {{user.employee.id}}</a> <br\>|
+    </div>
+
     <div class="logout">
+        
         <a href="http://localhost:8000/client/login">Logout</a>
     </div>
 
@@ -95,7 +116,7 @@
         <h1>Employees list:</h1>
         <ul>
             {% for employee in employees %}
-            <li><a href="/client/employees/{{ employee.code }}/">{{ employee.name }} - {{ employee.code }}</a></li>
+            <li><a href="/client/employees/{{ employee.code }}/">{{ employee.code }}</a></li>
             {% endfor %}
         </ul>
         {% else %}
@@ -111,7 +132,7 @@
                 {% for file in files %}
                 <li>
                     <a href="#" onclick="downloadFile('{{file.id}}', '{{ file.name }}', '{{ file.is_encrypted|lower }}')">
-                        File name: {{ file.name }} - Is encrypted: {{ file.is_encrypted }}
+                        File name: {{ file.name }} - Is encrypted: {{ file.is_encrypted }} - Author id: {{file.employee_id}}
                     </a>
                 </li>
                 {% endfor %}

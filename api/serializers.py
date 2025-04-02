@@ -9,8 +9,8 @@ class EmployeeListSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
 
     def get_title(self, obj):
-        level = dict(Employee.LEVEL_CHOICES).get(obj.level)
-        type = dict(Employee.TYPE_CHOICES).get(obj.type)
+        level = obj.level
+        type = obj.type
         return level + " " + type
 
     class Meta:
@@ -36,8 +36,8 @@ class EmployeeDetailSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
 
     def get_title(self, obj):
-        level = dict(Employee.LEVEL_CHOICES).get(obj.level)
-        type = dict(Employee.TYPE_CHOICES).get(obj.type)
+        level = obj.level
+        type = obj.type
         return level + " " + type
 
     class Meta:
@@ -101,8 +101,8 @@ class MaskedEmployeeDetailSerializer(serializers.ModelSerializer):
     title = serializers.SerializerMethodField()
 
     def get_title(self, obj):
-        level = dict(Employee.LEVEL_CHOICES).get(obj.level)
-        type = dict(Employee.TYPE_CHOICES).get(obj.type)
+        level = obj.level
+        type = obj.type
         return level + " " + type
 
     #work
@@ -123,16 +123,18 @@ class MaskedEmployeeDetailSerializer(serializers.ModelSerializer):
     current_address = serializers.SerializerMethodField()
     permanent_address = serializers.SerializerMethodField()
     bank_account_number = serializers.SerializerMethodField()
-    # date_of_birth = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    gender = serializers.SerializerMethodField()
+    date_of_birth = serializers.SerializerMethodField()
 
     def get_phone_number(self, obj):
-        return mask_phone_number(obj.phone_number)
+        return mask_common(obj.phone_number)
 
     def get_citizen_identification_code(self, obj):
         return mask_common(obj.citizen_identification_code)
 
     def get_personal_email(self, obj):
-        return mask_email(obj.personal_email)
+        return mask_common(obj.personal_email)
 
     def get_birthplace(self, obj):
         return mask_common(obj.birthplace)
@@ -146,8 +148,14 @@ class MaskedEmployeeDetailSerializer(serializers.ModelSerializer):
     def get_bank_account_number(self, obj):
         return mask_common(obj.bank_account_number)
     
-    # def get_date_of_birth(self, obj):
-    #     return mask_date_of_birth(obj.date_of_birth)
+    def get_name(self, obj):
+        return mask_common(obj.name)
+    
+    def get_gender(self, obj):
+        return mask_common(obj.gender)
+    
+    def get_date_of_birth(self, obj):
+        return mask_common(obj.date_of_birth)
 
     class Meta:
         model = Employee
@@ -181,4 +189,4 @@ class FileUploadListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FileUpload
-        fields = ["id", "name", "url", "is_encrypted", "created_at"]
+        fields = ["id", "name", "url", "is_encrypted", "created_at", "employee_id"]

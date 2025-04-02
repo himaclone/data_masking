@@ -22,7 +22,7 @@ def mask_phone_number(phone_number: str) -> str:
 
 
 def mask_common(plain: str) -> str:
-    return mask_inner(plain, keep_start=3, keep_end=0)
+    return mask_inner(plain, keep_start=0, keep_end=0)
 
 def mask_aes(plain: str, key) -> str:
     return aes_string.aes_encrypt_string(plain, key)

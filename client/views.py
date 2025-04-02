@@ -90,7 +90,7 @@ def home_view(request):
     response = requests.get(f"{API_BASE_URL}files/", headers=headers)
     files = response.json() if response.status_code == 200 else []
 
-    return render(request, "home.html", {"employees": employees, "files": files})
+    return render(request, "home.html", {"user": request.user,"employees": employees, "files": files})
 
 
 # @login_required
