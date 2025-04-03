@@ -173,6 +173,19 @@
                 return;
             }
 
+            if (encryptCheckbox.checked) {
+                if (!key) {
+                    errorMessage.textContent = "Enter key to encrypt file.";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+                if (key.length != keyLength) {
+                    errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
+                    errorMessage.style.display = "block";
+                    return;
+                }
+            }
+
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('key_length', keyLength);
@@ -208,6 +221,7 @@
 
         function downloadFile(file_id, fileName, isEncrypted) {
             const key = document.getElementById('key').value;
+            const keyLength = document.getElementById('key-length').value;
             const token = "{{ request.session.access_token }}";
             const errorMessage = document.getElementById('error-message');
             
@@ -221,6 +235,11 @@
             if (isEncrypted) {
                 if (!key) {
                     errorMessage.textContent = "Enter key to decrypt file.";
+                    errorMessage.style.display = "block";
+                    return;
+                }
+                if (key.length != keyLength) {
+                    errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
                     errorMessage.style.display = "block";
                     return;
                 }
@@ -254,7 +273,8 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                errorMessage.textContent = "Download failed: " + error.message;
+                /*errorMessage.textContent = "Download failed: " + error.message;*/
+                errorMessage.textContent = "Download failed: can not decrypted";
                 errorMessage.style.display = "block";
             });
         }
