@@ -63,30 +63,31 @@ def employee_detail(request, code):
             code=code,
         )
         key = request.POST.get('key').encode("utf-8");
+        key_len = int(request.POST.get('key_length'));
         serializer = MaskedEmployeeDetailSerializer(employee)
 
         try:
-            employee.name = aes_string.aes_decrypt_string(bytes.fromhex(employee.name) ,key)
-            employee.email = aes_string.aes_decrypt_string(bytes.fromhex(employee.email) ,key)
-            employee.gender = aes_string.aes_decrypt_string(bytes.fromhex(employee.gender) ,key)
-            employee.date_of_birth = aes_string.aes_decrypt_string(bytes.fromhex(employee.date_of_birth) ,key)
-            employee.probationary_end_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.probationary_end_date) ,key)
-            employee.probationary_start_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.probationary_start_date) ,key)
-            employee.official_start_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.official_start_date) ,key)
-            employee.tax_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.tax_code) ,key)
-            employee.social_insurance_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.social_insurance_code) ,key)
-            employee.type = aes_string.aes_decrypt_string(bytes.fromhex(employee.type) ,key)
-            employee.level = aes_string.aes_decrypt_string(bytes.fromhex(employee.level) ,key)
-            employee.phone_number = aes_string.aes_decrypt_string(bytes.fromhex(employee.phone_number) ,key)
-            employee.citizen_identification_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.citizen_identification_code) ,key)
-            employee.personal_email = aes_string.aes_decrypt_string(bytes.fromhex(employee.personal_email) ,key)
-            employee.birthplace = aes_string.aes_decrypt_string(bytes.fromhex(employee.birthplace) ,key)
-            employee.current_address = aes_string.aes_decrypt_string(bytes.fromhex(employee.current_address) ,key)
-            employee.permanent_address = aes_string.aes_decrypt_string(bytes.fromhex(employee.permanent_address) ,key)
-            employee.bank_name = aes_string.aes_decrypt_string(bytes.fromhex(employee.bank_name) ,key)
-            employee.bank_account_number = aes_string.aes_decrypt_string(bytes.fromhex(employee.bank_account_number) ,key)
-            employee.education = aes_string.aes_decrypt_string(bytes.fromhex(employee.education) ,key)
-            employee.graduation_year = aes_string.aes_decrypt_string(bytes.fromhex(employee.graduation_year) ,key)
+            employee.name = aes_string.aes_decrypt_string(bytes.fromhex(employee.name) ,key, key_len)
+            employee.email = aes_string.aes_decrypt_string(bytes.fromhex(employee.email) ,key, key_len)
+            employee.gender = aes_string.aes_decrypt_string(bytes.fromhex(employee.gender) ,key, key_len)
+            employee.date_of_birth = aes_string.aes_decrypt_string(bytes.fromhex(employee.date_of_birth) ,key, key_len)
+            employee.probationary_end_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.probationary_end_date) ,key, key_len)
+            employee.probationary_start_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.probationary_start_date) ,key, key_len)
+            employee.official_start_date = aes_string.aes_decrypt_string(bytes.fromhex(employee.official_start_date) ,key, key_len)
+            employee.tax_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.tax_code) ,key, key_len)
+            employee.social_insurance_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.social_insurance_code) ,key, key_len)
+            employee.type = aes_string.aes_decrypt_string(bytes.fromhex(employee.type) ,key, key_len)
+            employee.level = aes_string.aes_decrypt_string(bytes.fromhex(employee.level) ,key, key_len)
+            employee.phone_number = aes_string.aes_decrypt_string(bytes.fromhex(employee.phone_number) ,key, key_len)
+            employee.citizen_identification_code = aes_string.aes_decrypt_string(bytes.fromhex(employee.citizen_identification_code) ,key, key_len)
+            employee.personal_email = aes_string.aes_decrypt_string(bytes.fromhex(employee.personal_email) ,key, key_len)
+            employee.birthplace = aes_string.aes_decrypt_string(bytes.fromhex(employee.birthplace) ,key, key_len)
+            employee.current_address = aes_string.aes_decrypt_string(bytes.fromhex(employee.current_address) ,key, key_len)
+            employee.permanent_address = aes_string.aes_decrypt_string(bytes.fromhex(employee.permanent_address) ,key, key_len)
+            employee.bank_name = aes_string.aes_decrypt_string(bytes.fromhex(employee.bank_name) ,key, key_len)
+            employee.bank_account_number = aes_string.aes_decrypt_string(bytes.fromhex(employee.bank_account_number) ,key, key_len)
+            employee.education = aes_string.aes_decrypt_string(bytes.fromhex(employee.education) ,key, key_len)
+            employee.graduation_year = aes_string.aes_decrypt_string(bytes.fromhex(employee.graduation_year) ,key, key_len)
         except Exception as e:
             print(f"Lỗi giải mã: {e}")
             return Response(serializer.data)
@@ -117,11 +118,12 @@ def files(request):
     employee_id = request.user.employee.id
 
     if request.method == "POST":
+        key_len = int(request.POST.get('key_length'));
         data = request.data
         data["employee"] = employee_id
         is_encrypted = request.POST.get('is_encrypted') == 'true'
         if(is_encrypted):
-            data["file"] = ContentFile(utils.aes_string.aes_encrypt_string(data["file"].read().decode('utf-8'), data["key"].encode('utf-8')), name=data["file"].name)
+            data["file"] = ContentFile(utils.aes_string.aes_encrypt_string(data["file"].read().decode('utf-8'), data["key"].encode('utf-8'), key_len), name=data["file"].name)
         
         serializer = FileUploadSerializer(data=data)
         if serializer.is_valid():
@@ -154,13 +156,14 @@ def file_download(request, id):
         is_encrypted = file.is_encrypted
         # Nếu file được mã hóa, giải mã trước
         if is_encrypted:
+            key_len = int(request.POST.get('key_length'));
             with open(file_path, 'rb') as f:
                 file_content = f.read()
             key = request.POST.get('key')
             if not key:
                 return Response({"error": "Key is required to decrypt the file"}, status=400)
             try:
-                file_content = utils.aes_string.aes_decrypt_string(file_content, key.encode("utf-8"))
+                file_content = utils.aes_string.aes_decrypt_string(file_content, key.encode("utf-8"), key_len)
             except Exception as e:
                 return Response({"error": f"Decryption failed: {str(e)}"}, status=400)
         else:

@@ -194,14 +194,21 @@ def unpad_data(data):
         raise ValueError("Invalid padding")
     return data[:-padding_len]
 
-def aes_encrypt_string(input_string, key):
+def aes_encrypt_string(input_string, key, key_len):
     """
     Mã hóa chuỗi đầu vào bằng AES-ECB với khóa linh hoạt
     - input_string: chuỗi cần mã hóa
     - key: khóa AES (16, 24 hoặc 32 bytes)
     """
-    if len(key) not in (16, 24, 32):
+    if key_len not in (16, 24, 32):
         raise ValueError("Key must be 16, 24, or 32 bytes")
+    
+    if isinstance(key, str):
+        key = key.encode('utf-8')  # Chuyển chuỗi key thành bytes nếu cần
+    if len(key) < key_len:
+        key = key + b'\x00' * (key_len - len(key))  # Thêm 0x00 nếu key ngắn hơn key_len
+    elif len(key) > key_len:
+        key = key[:key_len]  # Cắt lấy key_len byte đầu tiên nếu key dài hơn
     
     plaintext = input_string.encode('utf-8')
     padded_data = pad_data(plaintext)
@@ -213,14 +220,23 @@ def aes_encrypt_string(input_string, key):
     
     return ciphertext
 
-def aes_decrypt_string(ciphertext, key):
+def aes_decrypt_string(ciphertext, key, key_len):
     """
     Giải mã chuỗi từ ciphertext bằng AES-ECB với khóa linh hoạt
     - ciphertext: dữ liệu mã hóa (bytes)
     - key: khóa AES (16, 24 hoặc 32 bytes)
     """
-    if len(key) not in (16, 24, 32):
+    if key_len not in (16, 24, 32):
         raise ValueError("Key must be 16, 24, or 32 bytes")
+    
+    if isinstance(key, str):
+        key = key.encode('utf-8')  # Chuyển chuỗi key thành bytes nếu cần
+    if len(key) < key_len:
+        key = key + b'\x00' * (key_len - len(key))  # Thêm 0x00 nếu key ngắn hơn key_len
+    elif len(key) > key_len:
+        key = key[:key_len]  # Cắt lấy key_len byte đầu tiên nếu key dài hơn
+
+
     if len(ciphertext) % 16 != 0:
         raise ValueError("Ciphertext length must be multiple of 16")
     

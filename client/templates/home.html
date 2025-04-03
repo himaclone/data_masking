@@ -179,11 +179,11 @@
                     errorMessage.style.display = "block";
                     return;
                 }
-                if (key.length != keyLength) {
-                    errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
-                    errorMessage.style.display = "block";
-                    return;
-                }
+                // if (key.length != keyLength) {
+                //     errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
+                //     errorMessage.style.display = "block";
+                //     return;
+                // }
             }
 
             const formData = new FormData();
@@ -238,12 +238,13 @@
                     errorMessage.style.display = "block";
                     return;
                 }
-                if (key.length != keyLength) {
-                    errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
-                    errorMessage.style.display = "block";
-                    return;
-                }
+                // if (key.length != keyLength) {
+                //     errorMessage.textContent = `Key length must be ${keyLength} characters, but got ${key.length}.`;
+                //     errorMessage.style.display = "block";
+                //     return;
+                // }
                 formData.append('key', key);
+                formData.append('key_length', keyLength);
             }
 
             fetch(url, {
