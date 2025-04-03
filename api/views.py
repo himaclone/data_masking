@@ -91,12 +91,11 @@ def employee_detail(request, code):
             print(f"Lỗi giải mã: {e}")
             return Response(serializer.data)
 
-        serializer = EmployeeDetailSerializer(employee)
 
-        # if code == request.user.employee.code:
-        #     serializer = EmployeeDetailSerializer(employee)
-        # else:
-        #     serializer = MaskedEmployeeDetailSerializer(employee)
+        if code == request.user.employee.code:
+            serializer = EmployeeDetailSerializer(employee)
+        else:
+            serializer = MaskedEmployeeDetailSerializer(employee)
         return Response(serializer.data)
     
     if request.method == "GET":
